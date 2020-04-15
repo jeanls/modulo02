@@ -13,4 +13,5 @@ routes.post('/login', AuthController.login);
 routes.use(authMiddleware); // Após essa chamada só acessa o endpoint quem está logado
 
 routes.put('/users', UserController.update);
+
 export default routes;
