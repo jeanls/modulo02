@@ -25,14 +25,12 @@ class UserController {
   }
 
   async update(req, res) {
-    userValidator.update.validate(req.body).catch((err) => {
-      return res.json(err);
-    });
-    // if (!(await userValidator.update.isValid(req.body))) {
-    //   return res
-    //     .status(consts.badRequest)
-    //     .json({ error: 'Validation fields failed.' });
-    // }
+    // const validResponse = userValidator.update.validateSync(req.body);
+    if (!(await userValidator.update.isValid(req.body))) {
+      return res
+        .status(consts.badRequest)
+        .json({ error: 'Validation fields failed.' });
+    }
     const { email, oldPassword } = req.body;
 
     const user = await User.findByPk(req.userId);
