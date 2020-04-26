@@ -7,6 +7,7 @@ import UserController from './http/controllers/UserController';
 import AuthController from './http/controllers/AuthController';
 import FileController from './http/controllers/FileController';
 import ProviderController from './http/controllers/ProviderController';
+import AppointmentController from './http/controllers/AppointmentController';
 
 import authMiddleware from './http/middlewares/auth';
 
@@ -21,4 +22,7 @@ routes.use(authMiddleware); // Após essa chamada só acessa o endpoint quem est
 routes.put('/users', UserController.update);
 routes.post('/files', upload.single('file'), FileController.store);
 routes.get('/providers', ProviderController.index);
+
+routes.get('/appointments', AppointmentController.index);
+routes.post('/appointments', AppointmentController.store);
 export default routes;

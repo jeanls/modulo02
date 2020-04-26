@@ -1,0 +1,81 @@
+import { parseISO, startOfHour, isBefore } from 'date-fns';
+import Appointment from '../models/Appointment';
+import User from '../models/User';
+import File from '../models/File';
+import validator from '../validations/appointmentValidator';
+import consts from '../../config/consts';
+
+class AppointmentController {
+  async index(req, res) {
+    const { page = 1 } = req.query;
+    const appointments = await Appointment.findAll({
+      where: { user_id: req.userId, canceled_at: null },
+      offset: (page - 1) * 20,
+      limit: 20,
+      attributes: ['id', 'date'],
+      order: ['date'],
+      include: [
+        {
+          model: User,
+          as: 'provider',
+          attributes: ['id', 'name'],
+          include: [
+            { model: File, as: 'avatar', attributes: ['id', 'url', 'path'] },
+          ],
+        },
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'name'],
+          include: [
+            { model: File, as: 'avatar', attributes: ['id', 'url', 'path'] },
+          ],
+        },
+      ],
+    });
+    return res.json(appointments);
+  }
+
+  async store(req, res) {
+    if (!(await validator.store.isValid(req.body))) {
+      return res.status(consts.badRequest).json({ error: 'Validation error.' });
+    }
+
+    const { provider_id, date } = req.body;
+    const isProvider = await User.findOne({
+      where: { id: provider_id, provider: true },
+    });
+    if (!isProvider) {
+      return res
+        .status(consts.unauthorized)
+        .json({ error: 'User not authorized' });
+    }
+
+    const hourStart = startOfHour(parseISO(date));
+
+    if (isBefore(hourStart, new Date())) {
+      return res
+        .status(consts.badRequest)
+        .json({ error: 'Past dates are not permitted.' });
+    }
+
+    const checkAvaiability = await Appointment.findOne({
+      where: { provider_id, date: hourStart, canceled_at: null },
+    });
+
+    if (checkAvaiability) {
+      return res
+        .status(consts.badRequest)
+        .json({ error: 'Date is not avaiable.' });
+    }
+
+    const appointment = await Appointment.create({
+      user_id: req.userId,
+      provider_id,
+      date: hourStart,
+    });
+    return res.json(appointment);
+  }
+}
+
+export default new AppointmentController();
