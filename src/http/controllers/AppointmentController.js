@@ -93,7 +93,10 @@ class AppointmentController {
 
   async delete(req, res) {
     const appointment = await Appointment.findByPk(req.params.id, {
-      include: [{ model: User, as: 'provider', attributes: ['name', 'email'] }],
+      include: [
+        { model: User, as: 'provider', attributes: ['name', 'email'] },
+        { model: User, as: 'user', attributes: ['name'] },
+      ],
     });
     if (appointment.user_id !== req.userId) {
       return res.status(consts.unauthorized).json({ error: 'Unauthorized.' });
@@ -107,7 +110,14 @@ class AppointmentController {
     Mail.sendMail({
       to: `${appointment.provider.name} <${appointment.provider.email}>`,
       subject: 'Agendamento Cancelado',
-      text: 'Cancelamento de agendamento',
+      template: 'cancellation',
+      context: {
+        provider: appointment.provider.name,
+        user: appointment.user.name,
+        date: format(appointment.date, "dd 'de' MMMM', às' H:mm'h'", {
+          locale: pt,
+        }),
+      },
     });
     return res.status(consts.success).json(appointment);
   }
