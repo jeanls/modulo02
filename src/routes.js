@@ -11,6 +11,7 @@ import ProviderController from './http/controllers/ProviderController';
 import AppointmentController from './http/controllers/AppointmentController';
 import ScheduleController from './http/controllers/ScheduleController';
 import NotificationController from './http/controllers/NotificationController';
+import AvaiableController from './http/controllers/AvaiableController';
 
 import authMiddleware from './http/middlewares/auth';
 import roleMiddleware from './http/middlewares/role';
@@ -25,7 +26,9 @@ routes.use(authMiddleware); // Após essa chamada só acessa o endpoint quem est
 
 routes.put('/users', UserController.update);
 routes.post('/files', upload.single('file'), FileController.store);
+
 routes.get('/providers', ProviderController.index);
+routes.get('/providers/:providerId/avaiable', AvaiableController.index);
 
 routes.get('/appointments', AppointmentController.index);
 routes.post('/appointments', AppointmentController.store);
