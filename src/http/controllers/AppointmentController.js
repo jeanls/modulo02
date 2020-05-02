@@ -3,7 +3,6 @@ import pt from 'date-fns/locale/pt';
 import Appointment from '../models/Appointment';
 import User from '../models/User';
 import File from '../models/File';
-import validator from '../validations/appointmentValidator';
 import consts from '../../config/consts';
 import Notification from '../schemas/Notification';
 import Queue from '../../lib/Queue';
@@ -41,10 +40,6 @@ class AppointmentController {
   }
 
   async store(req, res) {
-    if (!(await validator.store.isValid(req.body))) {
-      return res.status(consts.badRequest).json({ error: 'Validation error.' });
-    }
-
     const { provider_id, date } = req.body;
     const isProvider = await User.findOne({
       where: { id: provider_id, provider: true },

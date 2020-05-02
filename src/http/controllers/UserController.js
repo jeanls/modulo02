@@ -1,15 +1,8 @@
 import User from '../models/User';
 import consts from '../../config/consts';
-import userValidator from '../validations/userValidator';
 
 class UserController {
   async store(req, res) {
-    if (!(await userValidator.store.isValid(req.body))) {
-      return res
-        .status(consts.badRequest)
-        .json({ error: 'Validation fields failed.' });
-    }
-
     const userExists = await User.findOne({ where: { email: req.body.email } });
     if (userExists) {
       return res
@@ -25,12 +18,6 @@ class UserController {
   }
 
   async update(req, res) {
-    // const validResponse = userValidator.update.validateSync(req.body);
-    if (!(await userValidator.update.isValid(req.body))) {
-      return res
-        .status(consts.badRequest)
-        .json({ error: 'Validation fields failed.' });
-    }
     const { email, oldPassword } = req.body;
 
     const user = await User.findByPk(req.userId);

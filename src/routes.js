@@ -16,22 +16,31 @@ import AvaiableController from './http/controllers/AvaiableController';
 import authMiddleware from './http/middlewares/auth';
 import roleMiddleware from './http/middlewares/role';
 
+import UserStoreValidation from './http/validations/user/UserStore';
+import UserUpdateValidation from './http/validations/user/UserUpdate';
+import AuthLoginValidation from './http/validations/auth/AuthLogin';
+import AppointmentStoreValidation from './http/validations/appointment/AppointmentStore';
+
 const routes = new Router();
 const upload = multer(multerConfig);
 
-routes.post('/users', UserController.store);
-routes.post('/login', AuthController.login);
+routes.post('/users', UserStoreValidation, UserController.store);
+routes.post('/login', AuthLoginValidation, AuthController.login);
 
 routes.use(authMiddleware); // Após essa chamada só acessa o endpoint quem está logado
 
-routes.put('/users', UserController.update);
+routes.put('/users', UserUpdateValidation, UserController.update);
 routes.post('/files', upload.single('file'), FileController.store);
 
 routes.get('/providers', ProviderController.index);
 routes.get('/providers/:providerId/avaiable', AvaiableController.index);
 
 routes.get('/appointments', AppointmentController.index);
-routes.post('/appointments', AppointmentController.store);
+routes.post(
+  '/appointments',
+  AppointmentStoreValidation,
+  AppointmentController.store
+);
 routes.delete('/appointments/:id', AppointmentController.delete);
 
 routes.get(
