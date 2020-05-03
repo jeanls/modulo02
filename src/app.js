@@ -1,13 +1,17 @@
 import 'dotenv/config';
 import express from 'express';
 import * as Sentry from '@sentry/node';
+import cors from 'cors';
+import helmet from 'helmet';
+import redis from 'redis';
+import RateLimit from 'express-rate-limit';
+import RateLimitRedis from 'rate-limit-redis';
 import path from 'path';
 import Youch from 'youch';
 import 'express-async-errors';
 import routes from './routes';
 import './database';
 import sentryConfig from './config/sentry';
-import helmet from 'helmet';
 
 class App {
   constructor() {
@@ -21,12 +25,27 @@ class App {
 
   middlewares() {
     this.server.use(Sentry.Handlers.requestHandler());
+    this.server.use(cors());
     this.server.use(helmet());
     this.server.use(express.json());
     this.server.use(
       '/files',
       express.static(path.resolve(__dirname, '..', 'public', 'uploads'))
     );
+    if (process.env.NODE_ENV !== 'dev') {
+      this.server.use(
+        new RateLimit({
+          store: new RateLimitRedis({
+            client: redis.createClient({
+              host: process.env.REDIS_HOST,
+              port: process.env.REDIS_PORT,
+            }),
+          }),
+          windowMs: 1000 * 60 * 15,
+          max: 100,
+        })
+      );
+    }
   }
 
   routes() {
