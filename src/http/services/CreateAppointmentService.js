@@ -5,6 +5,7 @@ import Appointment from '../models/Appointment';
 import Notification from '../schemas/Notification';
 import UnauthorizedException from '../../exceptions/UnauthorizedException';
 import BadRequestException from '../../exceptions/BadRequestException';
+import Cache from '../../lib/Cache';
 
 class CreateAppointmentService {
   async run({ userId, provider_id, date }) {
@@ -46,6 +47,8 @@ class CreateAppointmentService {
       content: `Novo agendamento de ${user.name} para o dia ${formattedDate}`,
       user: provider_id,
     });
+
+    await Cache.invalidatePrefix(`user:${userId}:appointments`);
     return appointment;
   }
 }
