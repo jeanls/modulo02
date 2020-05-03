@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import Brute from 'express-brute';
+import BruteRedis from 'express-brute-redis';
 
 import multer from 'multer';
 import multerConfig from './config/multer';
@@ -23,9 +25,19 @@ import AppointmentStoreValidation from './http/validations/appointment/Appointme
 
 const routes = new Router();
 const upload = multer(multerConfig);
+const bruteStore = new BruteRedis({
+  host: process.env.REDIS_HOST,
+  port: process.env.REDIS_PORT,
+});
+const bruteForce = new Brute(bruteStore);
 
 routes.post('/users', UserStoreValidation, UserController.store);
-routes.post('/login', AuthLoginValidation, AuthController.login);
+routes.post(
+  '/login',
+  bruteForce.prevent,
+  AuthLoginValidation,
+  AuthController.login
+);
 
 routes.use(authMiddleware); // Após essa chamada só acessa o endpoint quem está logado
 
