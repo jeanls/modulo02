@@ -2,3 +2,4 @@ node_modules/**
 public/uploads/**
 .env
 __tests__/coverage/**
+__tests__/database.sqlite
